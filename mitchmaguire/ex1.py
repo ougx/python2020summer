@@ -1,1 +1,1 @@
-print("exercise 1 code") 
+print("hello world") 
