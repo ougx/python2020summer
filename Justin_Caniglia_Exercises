@@ -1,1 +1,111 @@
+import math
 
+print ('Hello WOrld') 
+#%% Question 1
+print('Total Seoconds is ' , 42 * 60 + 42)
+
+#%% Question 2
+print('Total Miles are ', 10 / 1.61)
+
+#%% Question 3
+print('Average pace per mile in minutes is ' , 6.211 / 42.7)
+print('Average pace per mile in seconds is' , 6.211 / 2562)
+print('Average speed in mph is ' , 6.211 / (42.7 / 60) )
+
+#%% Question 4
+print('Convert 1 Radian to Degree' , 1 * 180/math.pi )
+
+#%% Question 5
+h = 4
+r = 6
+
+v = math.pi * r ** 2 * h
+print('Volume is', v)
+
+#%% Question 6
+R = 6373.0
+
+lat1 = math.radians(69.96985432)
+lon1 = math.radians(29.07573987)
+lat2 = math.radians(63.1896464)
+lon2 = math.radians(17.93575681)
+
+dlon = lon2 - lon1
+dlat = lat2 - lat1
+
+a = math.sin(dlat / 2)**2 + math.cos(lat1) * math.cos(lat2) * math.sin(dlon / 2)**2
+c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+
+Distance = R * c
+
+print(Distance)
+
+
+#%% Question 7
+print('  ----   ')
+print(' /    \\')
+print(' /     \\')
+print(' | STOP  |')
+print(' \\     /   ')
+print('  \\    / ')
+print('    ----   ')
+
+Exercise 2
+
+# Ex1. Python function that can take a list of words and returns the length of the longest one.
+def get_the_longest_word(word_list):
+    max_len = 0
+    for word in word_list:
+         if len(word) > max_len:
+            max_len = len(word)
+            result = word
+            
+    return max_len, result
+    get_the_longest_word(['Nebraska', 'PFAS', 'polyfluoroalkyl'])
+    
+    # Ex.2 Python program that counts the number of characters in a string.
+def string_count(string1):
+    return len(set(list(string1)))
+
+string_count('uuuuiiiiiiieeeedddddlllllpppppaaaaaqqqqqcccccgggggtttttetetezaza')
+    
+    # Ex.3 Python Program that sors a dictionary by value (ascending and descending).
+import operator
+dictionary = {1: 4, 3: 5, 4: 6, 2: 2, 0: 9}
+print('Normal Dictionary : ',dictionary)
+sorted_values = dict(sorted(d.items(), key=operator.itemgetter(1)))
+print('Ascending order by value : ',sorted_values)
+sorted_values = dict(sorted(d.items(), key=operator.itemgetter(1),reverse=True))
+print('Descending order by value : ',sorted_values)
+
+  
+
+#Ex.4 Python program to change a string to a new string where first and last characters have exchanged.
+def char_exchange(string2):
+    return string2[-1:] + string2[1:-1] + string2[:1]
+
+print(char_exchange('Nebraska Water Center'))
+
+#Ex.5 Python function that takes two lists and returns True if they have at least one common members
+def common_member(list1, list2):
+    result = False
+    for x in list1:
+        for y in list2:
+            if x == y:
+                result = True
+                break
+            return result
+print(common_member([2, 3, 5], [2, 4, 9]))
+
+#Ex.6 Python function that returns the minimum number of coins (.01, .1, .25, 1) that make a given value
+def coin_changes(value):
+    
+    coins = [100, 25, 10, 1]
+    value = int(value * 100)
+    coins_number = []
+    for c in coins:
+        n = value // c
+        coins_number.append(n)
+        value -= n * c
+    return coins_number
+coin_changes(2.69)
