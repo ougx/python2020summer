@@ -51,7 +51,9 @@ print(func(6, 7, 8, 9))
 
 #Return: '02 27 2017 04 30'
 
-t=(4,30,2017,2,27)
+print("Answer with str.format()")
+ans="0{3} {4} {2} 0{0} {1}".format(4, 30, 2017, 2, 27)
+print(ans)
 
 
 
@@ -74,8 +76,18 @@ t=(4,30,2017,2,27)
 
 #func([1, 2, 3, 4, 5], 2) return ' 1 2 3 4 5'
 
-print('"{:^10.9}"'.format('1 2 3 4 5'))
-print('"{:^1.5}"'.format('1 2 3 4 5'))
+def func(item, width):
+  
+    res = ""
+  
+    for each_item in item:
+        res = res + "{:>{width}}".format(each_item, width = width)
+  
+    return res
+
+
+print(func([1, 2, 3, 4, 5, 6], 2))
+print(func([1, 2, 3, 4, 5, 6], 10))
 
 
 
