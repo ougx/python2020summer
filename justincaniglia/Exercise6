@@ -62,7 +62,7 @@ linear_regression(x, y)
 
 #Problem3. Eestimate the mean precipitation on different land use types.
 # create the datasets
-landuse = np.random.randint(1, 5, [5, 5])
+landuse = np.random.randint(1, 6, [5, 5])
 precip  = np.random.random([5, 5])
 
 print('landuse\n', landuse)
@@ -150,7 +150,7 @@ landuse_precip(buf, precip, prefix='')
 
 
 #Problem5.Write a Python function to find the nearest point of a list of given points. You are not allowed to use any type of loops
-points = [(3, 4), (1, 2), (7, 8), (9, 4), (6, 5), (8, 7), (4, 7)]
+points = [(3, 8), (10, 6), (3, 9), (1, 6), (8, 9), (1, 2), (3, 9)]
 points = np.array(points)
 
 distances = ((points.reshape(7, 1, 2) - points.reshape(1, 7, 2)) ** 2).sum(axis=2)
