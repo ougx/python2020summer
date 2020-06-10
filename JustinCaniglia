@@ -1,1 +1,680 @@
-
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# Exercise 7\n",
+    "## Justin Caniglia"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 10,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import numpy as np\n",
+    "import pandas as pd\n",
+    "import os"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 13,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "\n",
+    "#1. Use Pandas to repeat the Exercise 5.7.¶\n",
+    "#Hint 1: Use pd.read_csv(url, ...) to read the USGS online gauge data.\n",
+    "\n",
+    "#Hint 2: Use df.set_index() to set the datetime column and df.resample() to calculate the monthly and annual statistics\n",
+    "\n",
+    "myGageNums = ['06803495', '06803486']\n",
+    "myDates = ['2000-10-10', '2019-09-30']\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 14,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "def myURL(gageList, Dates):\n",
+    "    gages = ('&site_no={}' * len(gageList)).format(*gageList)\n",
+    "    period = f'&period=&begin_date={Dates[0]}&end_date={Dates[1]}'\n",
+    "    return f'https://waterdata.usgs.gov/nwis/dv?&cb_00060=on&format=rdb{gages}&referred_module=sw{period}'"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 15,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "<class 'pandas.core.frame.DataFrame'>\n",
+      "RangeIndex: 12315 entries, 0 to 12314\n",
+      "Data columns (total 5 columns):\n",
+      " #   Column         Non-Null Count  Dtype \n",
+      "---  ------         --------------  ----- \n",
+      " 0   Agency         12315 non-null  object\n",
+      " 1   Site           12306 non-null  object\n",
+      " 2   Date           12306 non-null  object\n",
+      " 3   Discharge_cfs  12306 non-null  object\n",
+      " 4   QualCode       12306 non-null  object\n",
+      "dtypes: object(5)\n",
+      "memory usage: 481.2+ KB\n"
+     ]
+    }
+   ],
+   "source": [
+    "raw_df = pd.read_csv(myURL(myGageNums, myDates), skiprows=29, delimiter='\\t', header=0, names=['Agency','Site','Date','Discharge_cfs','QualCode'])\n",
+    "\n",
+    "raw_df.head(20)\n",
+    "raw_df.info()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 16,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<style scoped>\n",
+       "    .dataframe tbody tr th:only-of-type {\n",
+       "        vertical-align: middle;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe tbody tr th {\n",
+       "        vertical-align: top;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe thead th {\n",
+       "        text-align: right;\n",
+       "    }\n",
+       "</style>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>Agency</th>\n",
+       "      <th>Site</th>\n",
+       "      <th>Date</th>\n",
+       "      <th>Discharge_cfs</th>\n",
+       "      <th>QualCode</th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <th>0</th>\n",
+       "      <td>USGS</td>\n",
+       "      <td>06803486</td>\n",
+       "      <td>2000-10-10</td>\n",
+       "      <td>10.0</td>\n",
+       "      <td>A</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>1</th>\n",
+       "      <td>USGS</td>\n",
+       "      <td>06803486</td>\n",
+       "      <td>2000-10-11</td>\n",
+       "      <td>10.0</td>\n",
+       "      <td>A</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>2</th>\n",
+       "      <td>USGS</td>\n",
+       "      <td>06803486</td>\n",
+       "      <td>2000-10-12</td>\n",
+       "      <td>11.0</td>\n",
+       "      <td>A</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>3</th>\n",
+       "      <td>USGS</td>\n",
+       "      <td>06803486</td>\n",
+       "      <td>2000-10-13</td>\n",
+       "      <td>12.0</td>\n",
+       "      <td>A</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>4</th>\n",
+       "      <td>USGS</td>\n",
+       "      <td>06803486</td>\n",
+       "      <td>2000-10-14</td>\n",
+       "      <td>13.0</td>\n",
+       "      <td>A</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>5</th>\n",
+       "      <td>USGS</td>\n",
+       "      <td>06803486</td>\n",
+       "      <td>2000-10-15</td>\n",
+       "      <td>11.0</td>\n",
+       "      <td>A</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>6</th>\n",
+       "      <td>USGS</td>\n",
+       "      <td>06803486</td>\n",
+       "      <td>2000-10-16</td>\n",
+       "      <td>11.0</td>\n",
+       "      <td>A</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>7</th>\n",
+       "      <td>USGS</td>\n",
+       "      <td>06803486</td>\n",
+       "      <td>2000-10-17</td>\n",
+       "      <td>11.0</td>\n",
+       "      <td>A</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>8</th>\n",
+       "      <td>USGS</td>\n",
+       "      <td>06803486</td>\n",
+       "      <td>2000-10-18</td>\n",
+       "      <td>11.0</td>\n",
+       "      <td>A</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>9</th>\n",
+       "      <td>USGS</td>\n",
+       "      <td>06803486</td>\n",
+       "      <td>2000-10-19</td>\n",
+       "      <td>11.0</td>\n",
+       "      <td>A</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>10</th>\n",
+       "      <td>USGS</td>\n",
+       "      <td>06803486</td>\n",
+       "      <td>2000-10-20</td>\n",
+       "      <td>10.0</td>\n",
+       "      <td>A</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>11</th>\n",
+       "      <td>USGS</td>\n",
+       "      <td>06803486</td>\n",
+       "      <td>2000-10-21</td>\n",
+       "      <td>9.60</td>\n",
+       "      <td>A</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>12</th>\n",
+       "      <td>USGS</td>\n",
+       "      <td>06803486</td>\n",
+       "      <td>2000-10-22</td>\n",
+       "      <td>12.0</td>\n",
+       "      <td>A</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>13</th>\n",
+       "      <td>USGS</td>\n",
+       "      <td>06803486</td>\n",
+       "      <td>2000-10-23</td>\n",
+       "      <td>13.0</td>\n",
+       "      <td>A</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>14</th>\n",
+       "      <td>USGS</td>\n",
+       "      <td>06803486</td>\n",
+       "      <td>2000-10-24</td>\n",
+       "      <td>14.0</td>\n",
+       "      <td>A</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>15</th>\n",
+       "      <td>USGS</td>\n",
+       "      <td>06803486</td>\n",
+       "      <td>2000-10-25</td>\n",
+       "      <td>16.0</td>\n",
+       "      <td>A</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>16</th>\n",
+       "      <td>USGS</td>\n",
+       "      <td>06803486</td>\n",
+       "      <td>2000-10-26</td>\n",
+       "      <td>15.0</td>\n",
+       "      <td>A</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>17</th>\n",
+       "      <td>USGS</td>\n",
+       "      <td>06803486</td>\n",
+       "      <td>2000-10-27</td>\n",
+       "      <td>14.0</td>\n",
+       "      <td>A</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>18</th>\n",
+       "      <td>USGS</td>\n",
+       "      <td>06803486</td>\n",
+       "      <td>2000-10-28</td>\n",
+       "      <td>16.0</td>\n",
+       "      <td>A</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>19</th>\n",
+       "      <td>USGS</td>\n",
+       "      <td>06803486</td>\n",
+       "      <td>2000-10-29</td>\n",
+       "      <td>17.0</td>\n",
+       "      <td>A</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "   Agency      Site        Date Discharge_cfs QualCode\n",
+       "0    USGS  06803486  2000-10-10          10.0        A\n",
+       "1    USGS  06803486  2000-10-11          10.0        A\n",
+       "2    USGS  06803486  2000-10-12          11.0        A\n",
+       "3    USGS  06803486  2000-10-13          12.0        A\n",
+       "4    USGS  06803486  2000-10-14          13.0        A\n",
+       "5    USGS  06803486  2000-10-15          11.0        A\n",
+       "6    USGS  06803486  2000-10-16          11.0        A\n",
+       "7    USGS  06803486  2000-10-17          11.0        A\n",
+       "8    USGS  06803486  2000-10-18          11.0        A\n",
+       "9    USGS  06803486  2000-10-19          11.0        A\n",
+       "10   USGS  06803486  2000-10-20          10.0        A\n",
+       "11   USGS  06803486  2000-10-21          9.60        A\n",
+       "12   USGS  06803486  2000-10-22          12.0        A\n",
+       "13   USGS  06803486  2000-10-23          13.0        A\n",
+       "14   USGS  06803486  2000-10-24          14.0        A\n",
+       "15   USGS  06803486  2000-10-25          16.0        A\n",
+       "16   USGS  06803486  2000-10-26          15.0        A\n",
+       "17   USGS  06803486  2000-10-27          14.0        A\n",
+       "18   USGS  06803486  2000-10-28          16.0        A\n",
+       "19   USGS  06803486  2000-10-29          17.0        A"
+      ]
+     },
+     "execution_count": 16,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "df = raw_df[(raw_df['Agency']=='USGS')].copy()\n",
+    "df.head(20)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 18,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "C:\\Users\\canig\\Desktop\\NRES 898\\HW\\Exercises\\Exercise7\\USGS_Streamflow_Data.csv\n"
+     ]
+    }
+   ],
+   "source": [
+    "dirPath = r'C:\\Users\\canig\\Desktop\\NRES 898\\HW\\Exercises\\Exercise7'\n",
+    "fileName = 'USGS_Streamflow_Data.csv'\n",
+    "fullPath = os.path.join(dirPath, fileName)\n",
+    "print(fullPath)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "df.to_csv(fullPath, index=False)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "df['Date']= pd.to_datetime(df['Date'])\n",
+    "\n",
+    "df.info()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "df = df.set_index(['Date'])"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "df['Discharge_cfs'] = pd.to_numeric(df['Discharge_cfs'], errors='coerce')"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "monthlyStats = pd.DataFrame(columns=['Min','Max','Mean'])\n",
+    "\n",
+    "monthlyStats.Min = df.Discharge_cfs.groupby(df['Site']).resample('M').min()\n",
+    "monthlyStats.Max = df.Discharge_cfs.groupby(df['Site']).resample('M').max()\n",
+    "monthlyStats.Mean = df.Discharge_cfs.groupby(df['Site']).resample('M').mean()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "monthlyStats.head(20)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "fileName = 'monthlyStreamflowStats.csv'\n",
+    "fullPath = os.path.join(dirPath, fileName)\n",
+    "\n",
+    "print(fullPath)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "df['acreFeetPerDay'] = df['Discharge_cfs']*24*60*60/43560\n",
+    "\n",
+    "yearlyTotal = pd.DataFrame(columns=['acreFeet'])\n",
+    "yearlyTotal.acreFeet = df.acreFeetPerDay.groupby(df['Site']).resample('A').sum()\n",
+    "yearlyTotal"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "fileName = 'annualAcreFeet.csv'\n",
+    "fullPath = os.path.join(dirPath, fileName)\n",
+    "\n",
+    "print(fullPath)\n",
+    "\n",
+    "# save fitered dataframe to .csv file\n",
+    "yearlyTotal.to_csv(fullPath, float_format='%.2f')"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 21,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#2. Use Pandas to¶\n",
+    "#Read data in users.zip (using Pandas' the on-the-fly decompression cabability)\n",
+    "\n",
+    "#Identify all the occupations and compare the user numbers between STEM-related occupations and non-STEM occupations.\n",
+    "\n",
+    "#Identify the locations of the users that are programmers and above 35. How many male and female programmers, respectively? Is this ratio the same for the age under 35?\n",
+    "\n",
+    "#Compare the numbers of male and female for each occupations\n",
+    "\n",
+    "#Find the occupations with the youngest and oldest mean ages, respectively\n",
+    "\n",
+    "#Based on the first two digits of the zip codes, find the area with the largest number of users\n",
+    "\n",
+    "import pandas as pd\n",
+    "import os\n",
+    "\n",
+    "dirPath = r'C:\\Users\\canig\\Desktop\\NRES 898\\HW\\Exercises\\Exercise7'     #dirpath = r'C:\\Users\\canig\\Desktop\\NRES 898\\HW\\Exercises\\Exercise7'\n",
+    "fileName = 'users.zip'\n",
+    "fullPath = os.path.join(dirPath, fileName)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 22,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "<class 'pandas.core.frame.DataFrame'>\n",
+      "Int64Index: 943 entries, 1 to 943\n",
+      "Data columns (total 4 columns):\n",
+      " #   Column      Non-Null Count  Dtype \n",
+      "---  ------      --------------  ----- \n",
+      " 0   age         943 non-null    int64 \n",
+      " 1   gender      943 non-null    object\n",
+      " 2   occupation  943 non-null    object\n",
+      " 3   zip_code    943 non-null    object\n",
+      "dtypes: int64(1), object(3)\n",
+      "memory usage: 36.8+ KB\n"
+     ]
+    }
+   ],
+   "source": [
+    "userData = pd.read_csv(fullPath, compression= 'zip', sep='|')\n",
+    "userData = userData.set_index('user_id')\n",
+    "\n",
+    "userData.info()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 25,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Engineer = 0\n",
+      "Programmer = 0\n",
+      "Scientist = 0\n",
+      "Technician = 0\n",
+      "Total amount is =  943\n",
+      "Total STEM is =  0\n",
+      "Total Non-STEM is =  943\n"
+     ]
+    }
+   ],
+   "source": [
+    "stem_List = ('Engineer','Programmer','Scientist','Technician')\n",
+    "\n",
+    "stemTotal = 0\n",
+    "for item in stem_List:    \n",
+    "    num = len(userData[userData[\"occupation\"] == item])\n",
+    "    print(f'{item} = {num}')\n",
+    "    stemTotal += num\n",
+    "\n",
+    "totalAll = len(userData.index)\n",
+    "nonStemTotal = totalAll - stemTotal\n",
+    "\n",
+    "print('Total amount is = ', totalAll)  \n",
+    "print('Total STEM is = ', stemTotal)\n",
+    "print('Total Non-STEM is = ', nonStemTotal)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 26,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "number of male programmers over 35 = 19\n",
+      "number of male programmers over 35 = 2\n",
+      "ratio of male to femail programmers over 35 = 9.50\n",
+      "\n",
+      "number of male programmers 35 & under= 41\n",
+      "number of male programmers 35 & under = 4\n",
+      "ratio of male to femail programmers 35 & under = 10.25\n",
+      "\n"
+     ]
+    }
+   ],
+   "source": [
+    "programmerAgeHigh = userData.query('occupation == \"programmer\" & age > 35').groupby(userData['gender']).count()\n",
+    "maleProgrammersAgeHigh = programmerAgeHigh['gender']['M']\n",
+    "femaleProgrammersAgeHigh = programmerAgeHigh['gender']['F']\n",
+    "programmersAgeHighRatio = f'{maleProgrammersAgeHigh/femaleProgrammersAgeHigh:.2f}'\n",
+    "\n",
+    "print(f\"number of male programmers over 35 = {maleProgrammersAgeHigh}\")\n",
+    "print(f\"number of male programmers over 35 = {femaleProgrammersAgeHigh}\")\n",
+    "print(f\"ratio of male to femail programmers over 35 = {programmersAgeHighRatio}\\n\")\n",
+    "\n",
+    "\n",
+    "programmerAgeLow = userData.query('occupation == \"programmer\" & age <= 35').groupby(userData['gender']).count()\n",
+    "maleProgrammersAgeLow = programmerAgeLow['gender']['M']\n",
+    "femaleProgrammersAgeLow = programmerAgeLow['gender']['F']\n",
+    "programmersAgeLowRatio = f'{maleProgrammersAgeLow/femaleProgrammersAgeLow:.2f}'\n",
+    "\n",
+    "print(f\"number of male programmers 35 & under= {maleProgrammersAgeLow}\")\n",
+    "print(f\"number of male programmers 35 & under = {femaleProgrammersAgeLow}\")\n",
+    "print(f\"ratio of male to femail programmers 35 & under = {programmersAgeLowRatio}\\n\")"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 36,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "programmerOccupationStatistics\n"
+     ]
+    }
+   ],
+   "source": [
+    "programmerOccupationStatistics = userData.groupby(['occupation','gender'])['gender'].count()\n",
+    "print('programmerOccupationStatistics')"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 34,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "occupation\n",
+      "student          22.08\n",
+      "none             26.56\n",
+      "entertainment    29.22\n",
+      "artist           31.39\n",
+      "homemaker        32.57\n",
+      "programmer       33.12\n",
+      "technician       33.15\n",
+      "other            34.52\n",
+      "scientist        35.55\n",
+      "salesman         35.67\n",
+      "writer           36.31\n",
+      "engineer         36.39\n",
+      "lawyer           36.75\n",
+      "marketing        37.62\n",
+      "executive        38.72\n",
+      "administrator    38.75\n",
+      "librarian        40.00\n",
+      "healthcare       41.56\n",
+      "educator         42.01\n",
+      "doctor           43.57\n",
+      "retired          63.07\n",
+      "Name: age, dtype: float64 \n",
+      "\n",
+      "student is the occupation with the youngest mean age of 22.1 years\n",
+      "retired is the occupation with the oldest mean age of 63.1 years\n",
+      "\n"
+     ]
+    }
+   ],
+   "source": [
+    "meanAges = userData.groupby(['occupation'])['age'].mean()\n",
+    "print(meanAges.sort_values().round(decimals=2),'\\n')\n",
+    "\n",
+    "print(f'{meanAges.idxmin()} is the occupation with the youngest mean age of {meanAges.min():.1f} years')\n",
+    "print(f'{meanAges.idxmax()} is the occupation with the oldest mean age of {meanAges.max():.1f} years\\n')"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 35,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "the largest number of users is in zip code prefix '55'\n"
+     ]
+    }
+   ],
+   "source": [
+    "userData['shortZip'] = userData['zip_code'].str[:2]\n",
+    "numUsers = userData.groupby(['shortZip'])['occupation'].count()\n",
+    "print(f\"the largest number of users is in zip code prefix '{numUsers.idxmax()}'\")"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.7.6"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 4
+}
