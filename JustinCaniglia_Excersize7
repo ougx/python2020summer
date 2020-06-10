@@ -1,0 +1,142 @@
+#Exercise 7
+## Justin Caniglia
+
+import numpy as np
+import pandas as pd
+import os
+
+#1. Use Pandas to repeat the Exercise 5.7.¶
+#Hint 1: Use pd.read_csv(url, ...) to read the USGS online gauge data.
+
+#Hint 2: Use df.set_index() to set the datetime column and df.resample() to calculate the monthly and annual statistics
+
+myGageNums = ['06803495', '06803486']
+myDates = ['2000-10-10', '2019-09-30']
+
+def myURL(gageList, Dates):
+    gages = ('&site_no={}' * len(gageList)).format(*gageList)
+    period = f'&period=&begin_date={Dates[0]}&end_date={Dates[1]}'
+    return f'https://waterdata.usgs.gov/nwis/dv?&cb_00060=on&format=rdb{gages}&referred_module=sw{period}'
+    
+raw_df = pd.read_csv(myURL(myGageNums, myDates), skiprows=29, delimiter='\t', header=0, names=['Agency','Site','Date','Discharge_cfs','QualCode'])
+
+raw_df.head(20)
+raw_df.info()
+
+df = raw_df[(raw_df['Agency']=='USGS')].copy()
+df.head(20)
+
+dirPath = r'C:\Users\canig\Desktop\NRES 898\HW\Exercises\Exercise7'
+fileName = 'USGS_Streamflow_Data.csv'
+fullPath = os.path.join(dirPath, fileName)
+print(fullPath)
+
+df.to_csv(fullPath, index=False)
+
+df['Date']= pd.to_datetime(df['Date'])
+
+df.info()
+
+df = df.set_index(['Date'])
+
+df['Discharge_cfs'] = pd.to_numeric(df['Discharge_cfs'], errors='coerce')
+
+monthlyStats = pd.DataFrame(columns=['Min','Max','Mean'])
+
+monthlyStats.Min = df.Discharge_cfs.groupby(df['Site']).resample('M').min()
+monthlyStats.Max = df.Discharge_cfs.groupby(df['Site']).resample('M').max()
+monthlyStats.Mean = df.Discharge_cfs.groupby(df['Site']).resample('M').mean()
+
+monthlyStats.head(20)
+
+fileName = 'monthlyStreamflowStats.csv'
+fullPath = os.path.join(dirPath, fileName)
+
+print(fullPath)
+
+df['acreFeetPerDay'] = df['Discharge_cfs']*24*60*60/43560
+
+yearlyTotal = pd.DataFrame(columns=['acreFeet'])
+yearlyTotal.acreFeet = df.acreFeetPerDay.groupby(df['Site']).resample('A').sum()
+yearlyTotal
+
+fileName = 'annualAcreFeet.csv'
+fullPath = os.path.join(dirPath, fileName)
+
+print(fullPath)
+
+# save fitered dataframe to .csv file
+yearlyTotal.to_csv(fullPath, float_format='%.2f')
+
+
+#2. Use Pandas to¶
+#Read data in users.zip (using Pandas' the on-the-fly decompression cabability)
+
+#Identify all the occupations and compare the user numbers between STEM-related occupations and non-STEM occupations.
+
+#Identify the locations of the users that are programmers and above 35. How many male and female programmers, respectively? Is this ratio the same for the age under 35?
+
+#Compare the numbers of male and female for each occupations
+
+#Find the occupations with the youngest and oldest mean ages, respectively
+
+#Based on the first two digits of the zip codes, find the area with the largest number of users
+
+import pandas as pd
+import os
+
+dirPath = r'C:\Users\canig\Desktop\NRES 898\HW\Exercises\Exercise7'     #dirpath = r'C:\Users\canig\Desktop\NRES 898\HW\Exercises\Exercise7'
+fileName = 'users.zip'
+fullPath = os.path.join(dirPath, fileName)
+
+userData = pd.read_csv(fullPath, compression= 'zip', sep='|')
+userData = userData.set_index('user_id')
+
+userData.info()
+
+stem_List = ('Engineer','Programmer','Scientist','Technician')
+
+stemTotal = 0
+for item in stem_List:    
+    num = len(userData[userData["occupation"] == item])
+    print(f'{item} = {num}')
+    stemTotal += num
+
+totalAll = len(userData.index)
+nonStemTotal = totalAll - stemTotal
+
+print('Total amount is = ', totalAll)  
+print('Total STEM is = ', stemTotal)
+print('Total Non-STEM is = ', nonStemTotal)
+
+programmerAgeHigh = userData.query('occupation == "programmer" & age > 35').groupby(userData['gender']).count()
+maleProgrammersAgeHigh = programmerAgeHigh['gender']['M']
+femaleProgrammersAgeHigh = programmerAgeHigh['gender']['F']
+programmersAgeHighRatio = f'{maleProgrammersAgeHigh/femaleProgrammersAgeHigh:.2f}'
+
+print(f"number of male programmers over 35 = {maleProgrammersAgeHigh}")
+print(f"number of male programmers over 35 = {femaleProgrammersAgeHigh}")
+print(f"ratio of male to femail programmers over 35 = {programmersAgeHighRatio}\n")
+
+
+programmerAgeLow = userData.query('occupation == "programmer" & age <= 35').groupby(userData['gender']).count()
+maleProgrammersAgeLow = programmerAgeLow['gender']['M']
+femaleProgrammersAgeLow = programmerAgeLow['gender']['F']
+programmersAgeLowRatio = f'{maleProgrammersAgeLow/femaleProgrammersAgeLow:.2f}'
+
+print(f"number of male programmers 35 & under= {maleProgrammersAgeLow}")
+print(f"number of male programmers 35 & under = {femaleProgrammersAgeLow}")
+print(f"ratio of male to femail programmers 35 & under = {programmersAgeLowRatio}\n")
+
+programmerOccupationStatistics = userData.groupby(['occupation','gender'])['gender'].count()
+print('programmerOccupationStatistics')
+
+meanAges = userData.groupby(['occupation'])['age'].mean()
+print(meanAges.sort_values().round(decimals=2),'\n')
+
+print(f'{meanAges.idxmin()} is the occupation with the youngest mean age of {meanAges.min():.1f} years')
+print(f'{meanAges.idxmax()} is the occupation with the oldest mean age of {meanAges.max():.1f} years\n')
+
+userData['shortZip'] = userData['zip_code'].str[:2]
+numUsers = userData.groupby(['shortZip'])['occupation'].count()
+print(f"the largest number of users is in zip code prefix '{numUsers.idxmax()}'")
