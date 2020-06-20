@@ -1,0 +1,268 @@
+#Problem 1. Write a format string (using str.format() and f'string') that will take the following four element tuple:
+#( 2, 123.4567, 10000, 12345.67)
+
+#and produce:
+
+#'file_002 :   123.46, 1.00e+04, 1.23e+04'
+
+t=(2, 123.4567, 10000, 12345.67)
+print('file_{:0>3d} : {:.2f}, {:e}, {:e}'.format(*t))
+
+
+
+#Problem2. Write a python function that output the following formatted string based on the input iterable:
+#'The n numbers are: i1, i2, i3, ...'
+
+#where n is the number in the iterable and i1, i2 ... are the items inside the iterable.
+
+#for example:
+
+#func([1, 2, 3]) will return 'The 3 numbers are: 1, 2, 3'
+
+#func((6, 7, 8, 9)) will return 'The 4 numbers are: 6, 7, 8, 9'
+
+def func(seq):
+    return "The "+str(len(seq))+" numbers are: "+str(seq)[1:-1]
+
+# Testing
+print(func([1, 2, 3]))
+print(func((6, 7, 8, 9)))
+
+
+
+
+#Problem3. Write a similar function as the last one but it inputs variable-length arguments instead¶
+#func(1, 2, 3) will return 'The 3 numbers are: 1, 2, 3'
+
+#func(6, 7, 8, 9) will return 'The 4 numbers are: 6, 7, 8, 9'
+
+def func(*argv):
+    return "The "+str(len(argv))+" numbers are: "+str(argv)[1:-1]
+
+# Testing
+print(func(1, 2, 3))
+print(func(6, 7, 8, 9))
+
+
+
+
+#Problem4. Write a format string (f'string') that will take the following tuple and return the formatted string below:¶
+#Tuple: (4, 30, 2017, 2, 27)
+
+#Return: '02 27 2017 04 30'
+
+print("Answer with str.format()")
+ans="0{3} {4} {2} 0{0} {1}".format(4, 30, 2017, 2, 27)
+print(ans)
+
+
+
+#Problem5. Write a format string (f'string') that will take the following input and return the formatted string below:¶
+#Input: ['oranges', 1.3, 'lemons', 1.1]
+
+#Return: 'The weight of an orange is 1.3 and the weight of a lemon is 1.1 and the total weight is 2.4'
+
+"The weight of an {} is {} and the weight of a {} is and the total weight is 2.4".format("oranges", "1.3", "lemon", "1.1")
+
+
+
+
+#Problem6. Write a function that will format each item in an input iterable object into a customized width¶
+#syntax: func(iterable, width)
+
+#for example:
+
+#func([1, 2, 3, 4, 5], 3) return '  1  2  3  4  5'
+
+#func([1, 2, 3, 4, 5], 2) return ' 1 2 3 4 5'
+
+def func(item, width):
+  
+    res = ""
+  
+    for each_item in item:
+        res = res + "{:>{width}}".format(each_item, width = width)
+  
+    return res
+
+
+print(func([1, 2, 3, 4, 5, 6], 2))
+print(func([1, 2, 3, 4, 5, 6], 10))
+
+
+
+
+
+#Problem7. The USGS Water Data service provides retrival of streamflow data at the USGS stream gages. The download url follows the pattern below. Write a Python program 1) generate the url for a given list of gage numbers; 2) read this url and download the data to csv file (do not use numpy or pandas); 3) based on the downloaded data calculate the monthly stasticstics including maximum, minimum and average of the streamflow data and save it to another csv file. The data need to be formatted to 2 decimal digits. 4) calculate the average annual runoff of each gage (expressed in acre-feet)
+
+
+from urllib.request import urlopen
+import math
+import datetime
+
+def generate_url(gagelist, begin_date, end_date):
+    try:
+        bdate = datetime.date.fromisoformat(begin_date)
+        edate = datetime.date.fromisoformat(end_date)
+    except:
+        raise ValueError ("The input formats for the begin_date and end_date must be YYYY-MM-DD")
+        
+    if type(gagelist) is not list:
+        raise TypeError('The gagelist must be a list type.')
+    
+    if gagelist == []:
+        raise ValueError('The gagelist must not be an empty list.')
+        
+    gages = ('&site_no={}' * len(gagelist)).format(*gagelist)
+    period = f'&period=&begin_date={begin_date}&end_date={end_date}'
+    return f'https://waterdata.usgs.gov/nwis/dv?&cb_00060=on&format=rdb{gages}&referred_module=sw{period}'
+
+print(generate_url(['06803495', '06803486'], '2000-10-10', '2019-09-30'))
+
+def read_usgs_flowdata(url):
+    f = urllib.request.urlopen(url)
+    return f.readlines()
+
+lines = read_usgs_flowdata(generate_url(['06803495', '06803486'], '2000-10-10', '2019-09-30')
+
+for l in lines[:40]:
+    print(l)
+      
+ lines[39].decode().rstrip().split('\t')
+ 
+ def save_date(data_lines, csvfile):
+    for n, l in enumerate(data_lines):
+        if not l.startswith(b'#'):
+            break
+    
+    # now start working on the lines containing data
+    with open(csvfile, 'w') as f:
+        # extract and write headers
+        f.write(data_lines[n].decode().replace('\t', ','))
+        
+        # skip the column spec line
+        n += 2
+        for i, l in enumerate(data_lines[n:]):
+            if l.startswith(b'USGS'):
+                f.write(l.decode().replace('\t', ','))
+                
+save_date(lines, 'usgs_streamflow.csv') 
+
+! head -20 'usgs_streamflow.csv'
+
+# write the file as binary
+def save_date(data_lines, csvfile):
+    for n, l in enumerate(data_lines):
+        if not l.startswith(b'#'):
+            break
+    
+    # now start working on the lines containing data
+    with open(csvfile, 'wb') as f:
+        # extract and write headers
+        f.write(data_lines[n].replace(b'\t', b','))
+        
+        # skip the column spec line
+        n += 2
+        for i, l in enumerate(data_lines[n:]):
+            if l.startswith(b'USGS'):
+                f.write(l.replace(b'\t', b','))
+                
+save_date(lines, 'usgs_streamflow.csv') 
+
+! head -20 'usgs_streamflow.csv'
+! tail -20 'usgs_streamflow.csv'
+
+import math
+def mean(lst): 
+    try:
+        while math.nan in lst:
+            lst.remove(math.nan)
+        return sum(lst) / len(lst) if len(lst) > 0 else 0
+    except:
+        print(lst)
+            
+def cal_month_stat(daily_csv, monthly_csv):
+    site = ''
+    date = ''
+    begin = True
+    with open(daily_csv) as f:
+        # skip the header
+        f.readline()
+        idx_site = 1
+        idx_date = 2
+        idx_val  = 3
+        for i, l in enumerate(f):
+            items = l.split(',')
+            
+            # if site or month change, update the key 
+            if items[idx_site] != site or items[idx_date][:7] != date:
+                site = items[idx_site]
+                date = items[idx_date][:7]
+                key = f'{site},{date}'
+                if begin:
+                    site_month = {key: []}
+                    begin = False
+                else:
+                    site_month[key] = []
+                    
+            # append the data to the list        
+            if items[idx_val].replace('.', '0').isnumeric():
+                site_month[key].append(float(items[idx_val]))
+            else:
+                # some time it's frozen (ice)
+                print(items)
+    
+
+    # write the data
+    with open(monthly_csv, 'w') as fw:
+        # write the header first
+        fw.write('site_no,month,mean,min,max\n')
+        for k in site_month:
+            if site_month[k] == []:
+                print(k, site_month[k]) 
+            else:
+                fw.write(f'{k}-01,{mean(site_month[k]):.2f},{min(site_month[k]):.2f},{max(site_month[k]):.2f}\n')
+            
+cal_month_stat('usgs_streamflow.csv', 'monthly_streamflow.csv')
+! head -20 'monthly_streamflow.csv'
+! tail -20 'monthly_streamflow.csv'
+
+def cal_annual_runoff(daily_csv, annual_runoff_csv):
+    site = ''
+    year = ''
+    begin = True
+    with open(daily_csv) as f:
+        # skip the header
+        f.readline()
+        idx_site = 1
+        idx_date = 2
+        idx_val  = 3
+        for i, l in enumerate(f):
+            items = l.split(',')
+            
+            # if site or month change, update the key 
+            if items[idx_site] != site or items[idx_date][:4] != year:
+                site = items[idx_site]
+                year = items[idx_date][:4]
+                key = f'{site},{year}'
+                if begin:
+                    site_year = {key: []}
+                    begin = False
+                else:
+                    site_year[key] = []
+                    
+            # append the data to the list        
+            if items[idx_val].replace('.', '0').isnumeric():
+                site_year[key].append(float(items[idx_val]) * 86400 / 43560)
+    
+
+    # write the data
+    with open(annual_runoff_csv, 'w') as fw:
+        # write the header first
+        fw.write('site_no,year,runoff\n')
+        for k in site_year:
+            fw.write(f'{k}-01-01,{sum(site_year[k]):.2f}\n')
+            
+cal_annual_runoff('usgs_streamflow.csv', 'annual_runoff.csv')
+! head -20 'annual_runoff.csv'
+! tail -20 'annual_runoff.csv'
