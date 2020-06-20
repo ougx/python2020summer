@@ -7,8 +7,6 @@ Created on Thu Jun 18 15:16:11 2020
 
 
 # -*- coding: utf-8 -*-
-# -*- coding: utf-8 -*-
-
 ###########################################################################
 ## Python code generated with wxFormBuilder (version Oct 26 2018)
 ## http://www.wxformbuilder.org/
